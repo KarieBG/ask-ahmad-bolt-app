@@ -62,7 +62,7 @@ draft — anywhere private) as you go, labeled clearly.
     **Power Positioning** channel.
 13. Click the channel name at the top to open its details panel.
 14. Scroll to the bottom — you'll see a **Channel ID**, something like
-    `C08ABCD1234`. Copy it. Label it `POWER_POSITIONING_CHANNEL_ID`.
+    `C08ABCD1234`. Copy it. Label it `STRATEGY_CHANNEL_ID`.
 
 ### Add the bot to the channel
 
@@ -72,7 +72,7 @@ draft — anywhere private) as you go, labeled clearly.
 
 You should now have four labeled values saved somewhere:
 `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN`, `SLACK_SIGNING_SECRET`,
-`POWER_POSITIONING_CHANNEL_ID`.
+`STRATEGY_CHANNEL_ID`.
 
 ---
 
@@ -122,7 +122,7 @@ after this unless we update the code later.
     - `SLACK_BOT_TOKEN`
     - `SLACK_APP_TOKEN`
     - `SLACK_SIGNING_SECRET`
-    - `POWER_POSITIONING_CHANNEL_ID`
+    - `STRATEGY_CHANNEL_ID`
 15. Leave `DOWNSTREAM_WEBHOOK_URL` out for now — it's for a piece that isn't
     built yet.
 16. After adding all four, Railway will automatically redeploy. Click the
@@ -145,6 +145,54 @@ Once it's green, the app is live and connected to Slack.
 That's it — the app is live. Anyone in that channel can now click the
 button, fill out the form, and their question posts publicly for everyone
 to see, exactly like the mockup I showed you.
+
+---
+
+## Making updates later (reference for future changes)
+
+Any time I (or another developer) give you updated code — new files, or
+changes to existing ones — here's the general pattern to get them live.
+This is the same thing you did during initial setup, just written down for
+next time so you don't have to rely on remembering it.
+
+1. **Get the updated file(s).** I'll tell you exactly which file names
+   changed — sometimes just one, sometimes several. You don't need to
+   re-upload the whole project each time, only the files that changed.
+2. **Open your GitHub repo** (`ask-ahmad-bolt-app`, the one from Part 2).
+3. **For each changed file**: click on its filename in the file list, then
+   click the **pencil icon** (top right of the file view) to edit it.
+4. **Select all the existing text** in the editor (Cmd+A / Ctrl+A) and
+   delete it.
+5. **Paste in the new content** I gave you for that file.
+6. Scroll down, click the green **Commit changes** button. Leave "Commit
+   directly to the `main` branch" selected — don't choose "Create a new
+   branch."
+7. Repeat for any other changed files.
+8. **Wait for Railway to redeploy.** This happens automatically, usually
+   within a minute or two of the GitHub commit — no action needed on your
+   end. Go to your Railway project → **Deployments** tab and wait for a new
+   entry with a green checkmark. If you're not sure it picked up the change,
+   check the timestamp on the latest deployment — it should be recent.
+9. **If a new environment variable was introduced** (rare, but happens for
+   bigger features — e.g. a new integration needing its own API key), I'll
+   tell you the exact name to add. Go to Railway → **Variables** tab → **New
+   Variable** → paste in the name and value, same as during initial setup.
+10. **Test the change** by trying the relevant flow in Slack (clicking the
+    button, submitting a question, etc.) before considering it done.
+
+A couple of things that trip people up:
+- **Only replace files that actually changed.** If I only mention `app.js`
+  and `config.js`, leave the other files alone — pasting old content over a
+  file that didn't change won't break anything, but it's unnecessary work
+  and risks accidentally reverting something.
+- **Copy the *entire* file content**, not just the part that looks
+  different. Partial pastes are the most common way this goes wrong — the
+  file ends up with leftover old code mixed with new code, which usually
+  causes the whole app to fail on deploy (you'll see a red X in Railway's
+  Deployments tab instead of green).
+- **If Railway shows a red X after a commit**, click into that deployment
+  and click **View Logs** — the error near the bottom almost always points
+  to what went wrong (commonly a partial paste, per the point above).
 
 ---
 
