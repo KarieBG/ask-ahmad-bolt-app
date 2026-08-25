@@ -11,7 +11,7 @@ module.exports = {
   ahmad: {
     coachName: "Ahmad",
     topicLabel: "Power Positioning",
-    channelEnvVar: "POWER_POSITIONING_CHANNEL_ID",
+    channelEnvVar: "STRATEGY_CHANNEL_ID",
     slashCommand: "/ask-ahmad",
     callbackId: "ask_ahmad_modal",
     // Universal fields (async/call + optional call date) are added
