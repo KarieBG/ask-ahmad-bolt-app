@@ -94,12 +94,20 @@ function buildMainMessage({
   return { blocks, text: fallbackText };
 }
 
+// Some Slack display names include a trailing title (e.g. "Karie Miller -
+// 90DP Coach"), which reads awkwardly in a possessive sentence ("Karie
+// Miller - 90DP Coach's question..."). This trims to just the part before
+// " - " for that one line; the full name still shows as-is in the byline.
+function shortName(fullName) {
+  return fullName.split(" - ")[0].trim();
+}
+
 function buildThreadDetailMessage({ coreQuestion, links, filePermalinks, submitterName }) {
   // Leads with explicit attribution because Slack won't let this post under
   // the client's own name/photo (see the note in app.js) — without this,
   // the thread reads as Ahmad asking himself a question, since every
   // message the bot posts otherwise carries Ahmad's name and avatar.
-  const lines = [`💬 *${submitterName}'s question, in full:*`, "", coreQuestion];
+  const lines = [`💬 *${shortName(submitterName)}'s question, in full:*`, "", coreQuestion];
 
   if (links && links.trim()) {
     lines.push("");
