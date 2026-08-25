@@ -1,0 +1,31 @@
+display_information:
+  name: Ask Ahmad
+  description: Public Q&A intake for the Power Positioning channel
+  background_color: "#1a1a2e"
+features:
+  bot_user:
+    display_name: Ask Ahmad
+    always_online: true
+  slash_commands:
+    - command: /ask-ahmad
+      description: Ask Ahmad a question in this channel
+      should_escape: false
+    - command: /ask-ahmad-setup
+      description: One-time setup - post and pin the Ask Ahmad button
+      should_escape: false
+oauth_config:
+  scopes:
+    bot:
+      - chat:write
+      - commands
+      - files:read
+      - pins:write
+      - users:read
+settings:
+  event_subscriptions:
+    bot_events: []
+  interactivity:
+    is_enabled: true
+  org_deploy_enabled: false
+  socket_mode_enabled: true
+  token_rotation_enabled: false
