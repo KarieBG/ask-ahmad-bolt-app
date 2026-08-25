@@ -122,7 +122,7 @@ app.command("/ask-ahmad-setup", async ({ ack, command, client }) => {
     await client.chat.postEphemeral({
       channel: command.channel_id,
       user: command.user_id,
-      text: "POWER_POSITIONING_CHANNEL_ID isn't set in the app's environment variables yet — add it and redeploy, then try this again.",
+      text: "STRATEGY_CHANNEL_ID isn't set in the app's environment variables yet — add it and redeploy, then try this again.",
     });
     return;
   }
