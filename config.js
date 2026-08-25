@@ -18,6 +18,16 @@ module.exports = {
     // automatically in app.js — this list is just the branch-specific fields.
     fields: [
       {
+        block_id: "headline",
+        action_id: "headline_input",
+        label: "In one line, what's the core thing you're stuck on?",
+        type: "plain_text_input",
+        multiline: false,
+        optional: false,
+        placeholder:
+          "e.g. \"How to position our new tier against Competitor X\" — specific enough that someone skimming the channel knows if it's relevant to them",
+      },
+      {
         block_id: "core_question",
         action_id: "core_question_input",
         label: "What are you working on?",
