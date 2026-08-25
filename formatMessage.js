@@ -36,6 +36,22 @@
 // syntax) and caps at 150 characters — the headline field's max_length in
 // config.js is set to match.
 
+const MONTH_NAMES = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+// Slack's datepicker returns "YYYY-MM-DD" — parsed manually (not via `new
+// Date(...)`) to avoid timezone-shift bugs where UTC midnight can render as
+// the previous day depending on the server's local timezone.
+function formatCallDate(dateStr) {
+  if (!dateStr) return null;
+  const parts = dateStr.split("-").map(Number);
+  const [year, month, day] = parts;
+  if (!year || !month || !day) return dateStr; // fall back to raw string rather than showing nothing
+  return `${MONTH_NAMES[month - 1]} ${day}`;
+}
+
 function buildMainMessage({
   isCall,
   callDate,
@@ -46,6 +62,7 @@ function buildMainMessage({
   topicEmoji,
 }) {
   const blocks = [];
+  const displayDate = formatCallDate(callDate);
 
   blocks.push({
     type: "header",
@@ -54,7 +71,7 @@ function buildMainMessage({
 
   let metaText = `${topicEmoji ? topicEmoji + " " : ""}${topicLabel} · ${submitterName}`;
   if (isCall) {
-    metaText += ` · 📅 For upcoming call${callDate ? ` (${callDate})` : ""}`;
+    metaText += ` · 📅 For upcoming call${displayDate ? ` (${displayDate})` : ""}`;
   }
 
   const metaElements = [];
@@ -71,7 +88,7 @@ function buildMainMessage({
 
   // Plain-text fallback for notifications/accessibility.
   const fallbackText = isCall
-    ? `[${topicLabel}] ${headline} — ${submitterName}, for upcoming call${callDate ? ` (${callDate})` : ""}`
+    ? `[${topicLabel}] ${headline} — ${submitterName}, for upcoming call${displayDate ? ` (${displayDate})` : ""}`
     : `[${topicLabel}] ${headline} — ${submitterName}`;
 
   return { blocks, text: fallbackText };
