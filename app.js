@@ -73,6 +73,9 @@ function buildModalView() {
         multiline: !!field.multiline,
         placeholder: { type: "plain_text", text: field.placeholder },
       };
+      if (field.max_length) {
+        block.element.max_length = field.max_length;
+      }
     } else if (field.type === "file_input") {
       block.element = {
         type: "file_input",
@@ -212,31 +215,38 @@ app.view(branch.callbackId, async ({ ack, body, view, client }) => {
     }
   }
 
-  // Look up display name for "Asked by {{name}}"
+  // Look up display name + avatar for the byline. Avatar takes the place of
+  // the words "Asked by" — it signals authorship the way a byline photo
+  // does anywhere else, without needing a label.
   let submitterName = `<@${submitterId}>`;
+  let submitterAvatarUrl = null;
   try {
     const userInfo = await client.users.info({ user: submitterId });
     submitterName =
       userInfo.user?.profile?.display_name ||
       userInfo.user?.real_name ||
       submitterName;
+    submitterAvatarUrl = userInfo.user?.profile?.image_24 || null;
   } catch (err) {
-    console.error("Could not resolve submitter name, falling back to mention:", err);
+    console.error("Could not resolve submitter name/avatar, falling back to mention:", err);
   }
 
-  const mainMessageText = buildMainMessage({
+  const mainMessage = buildMainMessage({
     isCall,
     callDate,
     headline,
     submitterName,
+    submitterAvatarUrl,
     topicLabel: branch.topicLabel,
+    topicEmoji: branch.topicEmoji,
   });
 
   let posted;
   try {
     posted = await client.chat.postMessage({
       channel: channelId,
-      text: mainMessageText,
+      blocks: mainMessage.blocks,
+      text: mainMessage.text,
       unfurl_links: false,
     });
   } catch (err) {
