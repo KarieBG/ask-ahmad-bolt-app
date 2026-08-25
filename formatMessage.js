@@ -94,8 +94,12 @@ function buildMainMessage({
   return { blocks, text: fallbackText };
 }
 
-function buildThreadDetailMessage({ coreQuestion, links, filePermalinks }) {
-  const lines = [coreQuestion];
+function buildThreadDetailMessage({ coreQuestion, links, filePermalinks, submitterName }) {
+  // Leads with explicit attribution because Slack won't let this post under
+  // the client's own name/photo (see the note in app.js) — without this,
+  // the thread reads as Ahmad asking himself a question, since every
+  // message the bot posts otherwise carries Ahmad's name and avatar.
+  const lines = [`💬 *${submitterName}'s question, in full:*`, "", coreQuestion];
 
   if (links && links.trim()) {
     lines.push("");
