@@ -197,6 +197,7 @@ app.view(branch.callbackId, async ({ ack, body, view, client }) => {
   const callDate = values.call_date?.call_date_input?.selected_date || null;
 
   const headline = values.headline?.headline_input?.value?.trim() || "";
+  console.log("Extracted headline from modal:", JSON.stringify(headline));
   const coreQuestion =
     values.core_question?.core_question_input?.value?.trim() || "";
   const links = values.links?.links_input?.value || "";
@@ -243,12 +244,17 @@ app.view(branch.callbackId, async ({ ack, body, view, client }) => {
 
   let posted;
   try {
-    posted = await client.chat.postMessage({
+    const payload = {
       channel: channelId,
       blocks: mainMessage.blocks,
-      text: mainMessage.text,
+      // Defensive fallback: text should always be non-empty from
+      // buildMainMessage, but Slack rejects the whole post with a "no_text"
+      // error if it's ever empty/missing — this guarantees it can't happen.
+      text: mainMessage.text || `New question in ${branch.topicLabel}`,
       unfurl_links: false,
-    });
+    };
+    console.log("Posting main message, payload:", JSON.stringify(payload));
+    posted = await client.chat.postMessage(payload);
   } catch (err) {
     console.error("Failed to post question to channel:", err);
     // Let the submitter know privately, since the modal has already closed.
