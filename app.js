@@ -1,7 +1,7 @@
 require("dotenv").config();
 const { App } = require("@slack/bolt");
 const config = require("./config");
-const { buildMessage } = require("./formatMessage");
+const { buildMainMessage, buildThreadDetailMessage } = require("./formatMessage");
 
 const branch = config.ahmad; // proof of concept — only branch wired up so far
 const CHANNEL_ID = process.env[branch.channelEnvVar];
@@ -193,6 +193,7 @@ app.view(branch.callbackId, async ({ ack, body, view, client }) => {
   const isCall = asyncOrCall === "call";
   const callDate = values.call_date?.call_date_input?.selected_date || null;
 
+  const headline = values.headline?.headline_input?.value?.trim() || "";
   const coreQuestion =
     values.core_question?.core_question_input?.value?.trim() || "";
   const links = values.links?.links_input?.value || "";
@@ -223,12 +224,10 @@ app.view(branch.callbackId, async ({ ack, body, view, client }) => {
     console.error("Could not resolve submitter name, falling back to mention:", err);
   }
 
-  const messageText = buildMessage({
+  const mainMessageText = buildMainMessage({
     isCall,
     callDate,
-    coreQuestion,
-    links,
-    filePermalinks,
+    headline,
     submitterName,
     topicLabel: branch.topicLabel,
   });
@@ -237,7 +236,7 @@ app.view(branch.callbackId, async ({ ack, body, view, client }) => {
   try {
     posted = await client.chat.postMessage({
       channel: channelId,
-      text: messageText,
+      text: mainMessageText,
       unfurl_links: false,
     });
   } catch (err) {
@@ -249,6 +248,32 @@ app.view(branch.callbackId, async ({ ack, body, view, client }) => {
       text: `Something went wrong posting your question to <#${channelId}>. Please try again or flag this to support.`,
     });
     return;
+  }
+
+  // Full detail goes in a threaded reply, not the main message, so the
+  // channel stays scannable — headline first, detail one click away.
+  const detailMessageText = buildThreadDetailMessage({
+    coreQuestion,
+    links,
+    filePermalinks,
+  });
+
+  try {
+    await client.chat.postMessage({
+      channel: channelId,
+      thread_ts: posted.ts,
+      text: detailMessageText,
+      unfurl_links: false,
+    });
+  } catch (err) {
+    console.error("Failed to post detail thread reply:", err);
+    // Not fatal to the overall flow — the headline is already posted and
+    // visible. Let the submitter know the detail may not have made it in.
+    await client.chat.postEphemeral({
+      channel: channelId,
+      user: submitterId,
+      text: `Your question posted, but I couldn't attach the full detail in the thread. Reply in the thread yourself with the details, or flag this to support.`,
+    });
   }
 
   // Forward to the (not-yet-built) HelpScout sync / SLA bridge, if configured.
@@ -264,6 +289,7 @@ app.view(branch.callbackId, async ({ ack, body, view, client }) => {
           callDate,
           submitterId,
           submitterName,
+          headline,
           coreQuestion,
           links,
           filePermalinks,
