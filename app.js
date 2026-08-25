@@ -133,13 +133,13 @@ app.command("/ask-ahmad-setup", async ({ ack, command, client }) => {
   try {
     const posted = await client.chat.postMessage({
       channel: CHANNEL_ID,
-      text: "Have a question for Ahmad? Click below.",
+      text: "Have a question? Click below.",
       blocks: [
         {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: "*Have a question for Ahmad?*\nAsk it here — your question and his answer will be visible to everyone in this channel, so others can learn from it too.",
+            text: "*Have a question about your positioning?*\nAsk it here — I'll answer right in the thread, and everyone in this channel can see it, so others can learn from it too. See a question you've faced yourself? Jump into the thread with what worked for you — this works best when we all show up for each other.\n\n_If you're asking for an answer here (not saving it for a call), expect a reply within 2 business days._",
           },
           accessory: {
             type: "button",
@@ -280,6 +280,11 @@ app.view(branch.callbackId, async ({ ack, body, view, client }) => {
       thread_ts: posted.ts,
       text: detailMessageText,
       unfurl_links: false,
+      // This is the client's own question, not Ahmad's — post it under
+      // their name/photo (requires the chat:write.customize scope) so the
+      // thread doesn't read as Ahmad asking himself a question.
+      username: submitterName,
+      icon_url: submitterAvatarUrl || undefined,
     });
   } catch (err) {
     console.error("Failed to post detail thread reply:", err);
