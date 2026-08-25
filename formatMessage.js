@@ -1,43 +1,30 @@
-// Builds the public in-channel message from a submitted form.
+// Two-message format, per the decision to keep the channel scannable:
 //
-// Format (per handoff doc):
-//   {{Headline}}
-//   Asked by {{Name}} — {{Topic}}
+//   MAIN CHANNEL MESSAGE (short — this is what people browsing the channel see):
+//     {{Client-written headline}}
+//     Asked by {{Name}} — {{Topic}}
 //
-//   ─────
-//   {{Full detail}}
+//   THREADED REPLY (posted right after, using the main message's thread_ts —
+//   this is where the full detail lives, one click away):
+//     {{Full core question}}
+//     {{Links, if any}}
+//     {{Attachments, if any}}
 //
-// Headline approach: currently "derive automatically from the core question"
-// (the original default) — swap this function out if the "ask for a one-line
-// summary" or "AI-generate" approach wins after real usage testing.
+// Headline is written by the client, not derived or AI-generated — earlier
+// testing found automated headlines missed context the client has but didn't
+// (or couldn't) put in the question itself. The modal's hint text coaches
+// them toward something specific enough to be worth clicking into.
 
-const HEADLINE_MAX_LEN = 100;
+function buildMainMessage({ isCall, callDate, headline, submitterName, topicLabel }) {
+  const headlineLine = isCall
+    ? `📅 For upcoming call${callDate ? ` (${callDate})` : ""}: ${headline}`
+    : headline;
 
-function deriveHeadline(coreQuestion) {
-  const firstLine = coreQuestion.split("\n")[0].trim();
-  if (firstLine.length <= HEADLINE_MAX_LEN) return firstLine;
-  return firstLine.slice(0, HEADLINE_MAX_LEN).trim() + "…";
+  return [headlineLine, `Asked by ${submitterName} — ${topicLabel}`].join("\n");
 }
 
-function buildMessage({
-  isCall,
-  callDate,
-  coreQuestion,
-  links,
-  filePermalinks,
-  submitterName,
-  topicLabel,
-}) {
-  const headline = isCall
-    ? `📅 For upcoming call${callDate ? ` (${callDate})` : ""}`
-    : deriveHeadline(coreQuestion);
-
-  const lines = [];
-  lines.push(headline);
-  lines.push(`Asked by ${submitterName} — ${topicLabel}`);
-  lines.push("");
-  lines.push("─────");
-  lines.push(coreQuestion);
+function buildThreadDetailMessage({ coreQuestion, links, filePermalinks }) {
+  const lines = [coreQuestion];
 
   if (links && links.trim()) {
     lines.push("");
@@ -54,4 +41,4 @@ function buildMessage({
   return lines.join("\n");
 }
 
-module.exports = { buildMessage, deriveHeadline };
+module.exports = { buildMainMessage, buildThreadDetailMessage };
