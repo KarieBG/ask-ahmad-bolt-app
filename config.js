@@ -25,9 +25,9 @@ module.exports = {
         type: "plain_text_input",
         multiline: false,
         optional: false,
-        max_length: 200,
+        max_length: 150,
         placeholder:
-          "e.g. \"How to position our new tier against Competitor X\" — keep it to a sentence or two, the full detail goes in the next question",
+          "e.g. \"How to position our new tier against Competitor X\" — keep it to a sentence, the full detail goes in the next question",
       },
       {
         block_id: "core_question",
