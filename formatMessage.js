@@ -20,6 +20,22 @@
 // Slack requires a plain-text `text` fallback alongside `blocks` (used for
 // notifications, accessibility) — buildMainMessage returns both.
 
+// Main channel message, built with Slack Block Kit:
+//
+//   [header]   I am trying to finalize the language I use to describe my offer   <- large, native "header" block (not just bold text)
+//   [context]  (avatar) 🎯 Power Positioning · Karie Miller · 📅 For call (Aug 27)  <- everything else, one muted line
+//
+// Two blocks total (down from three) — Slack pads around every block, so
+// fewer blocks means less dead space between them. The topic badge moved
+// from its own line into the byline: once the headline is genuinely large
+// (header block, not markdown-bold text), it's the thing people read first
+// regardless of where the badge sits, so the badge's job shifts from
+// "read me first" to "confirm/reference" — which works fine folded in below.
+//
+// Note: Slack's header block only accepts plain text (no mrkdwn, no bold
+// syntax) and caps at 150 characters — the headline field's max_length in
+// config.js is set to match.
+
 function buildMainMessage({
   isCall,
   callDate,
@@ -31,41 +47,29 @@ function buildMainMessage({
 }) {
   const blocks = [];
 
-  if (topicEmoji || topicLabel) {
-    blocks.push({
-      type: "context",
-      elements: [
-        {
-          type: "mrkdwn",
-          text: `${topicEmoji ? topicEmoji + " " : ""}${topicLabel}`,
-        },
-      ],
-    });
-  }
-
   blocks.push({
-    type: "section",
-    text: { type: "mrkdwn", text: `*${headline}*` },
+    type: "header",
+    text: { type: "plain_text", text: headline, emoji: true },
   });
 
-  const bylineText = isCall
-    ? `${submitterName} · 📅 For upcoming call${callDate ? ` (${callDate})` : ""}`
-    : submitterName;
+  let metaText = `${topicEmoji ? topicEmoji + " " : ""}${topicLabel} · ${submitterName}`;
+  if (isCall) {
+    metaText += ` · 📅 For upcoming call${callDate ? ` (${callDate})` : ""}`;
+  }
 
-  const bylineElements = [];
+  const metaElements = [];
   if (submitterAvatarUrl) {
-    bylineElements.push({
+    metaElements.push({
       type: "image",
       image_url: submitterAvatarUrl,
       alt_text: submitterName,
     });
   }
-  bylineElements.push({ type: "mrkdwn", text: bylineText });
+  metaElements.push({ type: "mrkdwn", text: metaText });
 
-  blocks.push({ type: "context", elements: bylineElements });
+  blocks.push({ type: "context", elements: metaElements });
 
-  // Plain-text fallback for notifications/accessibility — mirrors the
-  // visible content without markdown syntax.
+  // Plain-text fallback for notifications/accessibility.
   const fallbackText = isCall
     ? `[${topicLabel}] ${headline} — ${submitterName}, for upcoming call${callDate ? ` (${callDate})` : ""}`
     : `[${topicLabel}] ${headline} — ${submitterName}`;
