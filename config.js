@@ -11,6 +11,7 @@ module.exports = {
   ahmad: {
     coachName: "Ahmad",
     topicLabel: "Power Positioning",
+    topicEmoji: "🎯",
     channelEnvVar: "STRATEGY_CHANNEL_ID",
     slashCommand: "/ask-ahmad",
     callbackId: "ask_ahmad_modal",
@@ -24,8 +25,9 @@ module.exports = {
         type: "plain_text_input",
         multiline: false,
         optional: false,
+        max_length: 200,
         placeholder:
-          "e.g. \"How to position our new tier against Competitor X\" — specific enough that someone skimming the channel knows if it's relevant to them",
+          "e.g. \"How to position our new tier against Competitor X\" — keep it to a sentence or two, the full detail goes in the next question",
       },
       {
         block_id: "core_question",
@@ -61,6 +63,7 @@ module.exports = {
   ana_client_clarity: {
     coachName: "Ana",
     topicLabel: "Client Clarity",
+    topicEmoji: "🔍",
     channelEnvVar: "CLIENT_CLARITY_CHANNEL_ID",
     slashCommand: "/ask-ana-clarity",
     callbackId: "ask_ana_clarity_modal",
@@ -69,6 +72,7 @@ module.exports = {
   ana_customer_listening: {
     coachName: "Ana",
     topicLabel: "Customer Listening",
+    topicEmoji: "👂",
     channelEnvVar: "CUSTOMER_LISTENING_CHANNEL_ID",
     slashCommand: "/ask-ana-listening",
     callbackId: "ask_ana_listening_modal",
@@ -77,6 +81,7 @@ module.exports = {
   kat: {
     coachName: "Kat",
     topicLabel: "Content Feedback",
+    topicEmoji: "✍️",
     channelEnvVar: "CONTENT_FEEDBACK_CHANNEL_ID",
     slashCommand: "/ask-kat",
     callbackId: "ask_kat_modal",
@@ -85,6 +90,7 @@ module.exports = {
   ross: {
     coachName: "Ross",
     topicLabel: "Outreach (LinkedIn)",
+    topicEmoji: "📣",
     channelEnvVar: "OUTREACH_CHANNEL_ID",
     slashCommand: "/ask-ross",
     callbackId: "ask_ross_modal",
@@ -93,6 +99,7 @@ module.exports = {
   support: {
     coachName: "Support", // TODO: replace with actual name once decided
     topicLabel: "General / Technical Support",
+    topicEmoji: "🛠️",
     channelEnvVar: "SUPPORT_CHANNEL_ID",
     slashCommand: "/ask-support",
     callbackId: "ask_support_modal",
