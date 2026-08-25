@@ -1,26 +1,76 @@
-// Two-message format, per the decision to keep the channel scannable:
+// Main channel message, now built with Slack Block Kit instead of plain
+// text, so headline and metadata can carry different visual weight:
 //
-//   MAIN CHANNEL MESSAGE (short — this is what people browsing the channel see):
-//     {{Client-written headline}}
-//     Asked by {{Name}} — {{Topic}}
+//   [context]  🎯 Power Positioning                      <- topic badge
+//   [section]  *Finding good language to explain my offer*  <- bold headline
+//   [context]  (avatar) Karie Miller · 📅 For call (Aug 27)  <- muted byline
 //
-//   THREADED REPLY (posted right after, using the main message's thread_ts —
-//   this is where the full detail lives, one click away):
-//     {{Full core question}}
-//     {{Links, if any}}
-//     {{Attachments, if any}}
+// Why a topic badge even though the channel is topic-named: #strategy is
+// shared across more than one coach/topic, so the channel name alone doesn't
+// tell someone skimming whose question they're looking at.
 //
-// Headline is written by the client, not derived or AI-generated — earlier
-// testing found automated headlines missed context the client has but didn't
-// (or couldn't) put in the question itself. The modal's hint text coaches
-// them toward something specific enough to be worth clicking into.
+// "Asked by" was dropped in favor of a small avatar image next to the name —
+// the avatar itself signals "this is who posted it," the way a byline does
+// anywhere else, without needing the label spelled out.
+//
+// Call info moved to sit right after the name (not prefixed before the
+// headline) so the headline stays clean and the "this is for a call" context
+// lives with the rest of the who/when metadata.
+//
+// Slack requires a plain-text `text` fallback alongside `blocks` (used for
+// notifications, accessibility) — buildMainMessage returns both.
 
-function buildMainMessage({ isCall, callDate, headline, submitterName, topicLabel }) {
-  const headlineLine = isCall
-    ? `📅 For upcoming call${callDate ? ` (${callDate})` : ""}: ${headline}`
-    : headline;
+function buildMainMessage({
+  isCall,
+  callDate,
+  headline,
+  submitterName,
+  submitterAvatarUrl,
+  topicLabel,
+  topicEmoji,
+}) {
+  const blocks = [];
 
-  return [headlineLine, `Asked by ${submitterName} — ${topicLabel}`].join("\n");
+  if (topicEmoji || topicLabel) {
+    blocks.push({
+      type: "context",
+      elements: [
+        {
+          type: "mrkdwn",
+          text: `${topicEmoji ? topicEmoji + " " : ""}${topicLabel}`,
+        },
+      ],
+    });
+  }
+
+  blocks.push({
+    type: "section",
+    text: { type: "mrkdwn", text: `*${headline}*` },
+  });
+
+  const bylineText = isCall
+    ? `${submitterName} · 📅 For upcoming call${callDate ? ` (${callDate})` : ""}`
+    : submitterName;
+
+  const bylineElements = [];
+  if (submitterAvatarUrl) {
+    bylineElements.push({
+      type: "image",
+      image_url: submitterAvatarUrl,
+      alt_text: submitterName,
+    });
+  }
+  bylineElements.push({ type: "mrkdwn", text: bylineText });
+
+  blocks.push({ type: "context", elements: bylineElements });
+
+  // Plain-text fallback for notifications/accessibility — mirrors the
+  // visible content without markdown syntax.
+  const fallbackText = isCall
+    ? `[${topicLabel}] ${headline} — ${submitterName}, for upcoming call${callDate ? ` (${callDate})` : ""}`
+    : `[${topicLabel}] ${headline} — ${submitterName}`;
+
+  return { blocks, text: fallbackText };
 }
 
 function buildThreadDetailMessage({ coreQuestion, links, filePermalinks }) {
