@@ -272,6 +272,7 @@ app.view(branch.callbackId, async ({ ack, body, view, client }) => {
     coreQuestion,
     links,
     filePermalinks,
+    submitterName,
   });
 
   try {
@@ -280,11 +281,11 @@ app.view(branch.callbackId, async ({ ack, body, view, client }) => {
       thread_ts: posted.ts,
       text: detailMessageText,
       unfurl_links: false,
-      // This is the client's own question, not Ahmad's — post it under
-      // their name/photo (requires the chat:write.customize scope) so the
-      // thread doesn't read as Ahmad asking himself a question.
-      username: submitterName,
-      icon_url: submitterAvatarUrl || undefined,
+      // Note: Slack silently ignores per-message username/icon_url overrides
+      // for modern bot apps (confirmed — not something fixable in our code),
+      // so authorship is made clear through the text itself instead: see
+      // buildThreadDetailMessage, which now leads with "{name}'s question,
+      // in full:" so this doesn't read as Ahmad talking to himself.
     });
   } catch (err) {
     console.error("Failed to post detail thread reply:", err);
